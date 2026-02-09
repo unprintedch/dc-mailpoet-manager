@@ -104,7 +104,9 @@ final class DCMM_Queries {
 		$t_stag  = dcmm_table( 'subscriber_tag' );
 		$t_sseg  = dcmm_table( 'subscriber_segment' );
 
-		$npa_field_id = $this->detect_npa_field_id();
+		$npa_field_id = ! empty( $params['npa_field_id'] )
+			? (int) $params['npa_field_id']
+			: $this->detect_npa_field_id();
 
 		// Build WHERE clauses.
 		$where   = [];

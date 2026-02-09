@@ -20,9 +20,9 @@ final class DCMM_Bulk {
 	 * @param int[]  $ids      All subscriber IDs.
 	 * @param int[]  $tag_ids  Tag IDs (for add/remove tag).
 	 * @param int[]  $list_ids List IDs (for add/remove list).
-	 * @param int    $offset   Current offset into $ids.
-	 * @param int    $chunk    Chunk size.
-	 * @return array{ok: bool, processed: int, remaining: int, download_url?: string, message?: string}
+	 * @param int    $offset Current offset into $ids.
+	 * @param int    $limit  Chunk size.
+	 * @return array{ok: bool, processed: int, remaining: int, next_offset: int|null, download_url?: string, message?: string}
 	 */
 	public function execute(
 		string $action,
@@ -30,15 +30,15 @@ final class DCMM_Bulk {
 		array $tag_ids,
 		array $list_ids,
 		int $offset,
-		int $chunk
+		int $limit
 	): array {
 		$total      = count( $ids );
-		$chunk_ids  = array_slice( $ids, $offset, $chunk );
+		$chunk_ids  = array_slice( $ids, $offset, $limit );
 		$processed  = $offset + count( $chunk_ids );
 		$remaining  = max( 0, $total - $processed );
 
 		if ( empty( $chunk_ids ) ) {
-			return [ 'ok' => true, 'processed' => $processed, 'remaining' => 0 ];
+			return [ 'ok' => true, 'processed' => $processed, 'remaining' => 0, 'next_offset' => null ];
 		}
 
 		$result = match ( $action ) {
@@ -47,7 +47,7 @@ final class DCMM_Bulk {
 			'add_list'     => $this->add_lists( $chunk_ids, $list_ids ),
 			'remove_list'  => $this->remove_lists( $chunk_ids, $list_ids ),
 			'unsubscribe'  => $this->unsubscribe( $chunk_ids ),
-			'export_csv'   => $this->export_csv( $ids, $offset, $chunk ),
+			'export_csv'   => $this->export_csv( $ids, $offset, $limit ),
 			default        => [ 'ok' => false, 'message' => 'Unknown action.' ],
 		};
 
@@ -56,9 +56,10 @@ final class DCMM_Bulk {
 		}
 
 		$response = [
-			'ok'        => true,
-			'processed' => $processed,
-			'remaining' => $remaining,
+			'ok'          => true,
+			'processed'   => $processed,
+			'remaining'   => $remaining,
+			'next_offset' => $remaining > 0 ? $processed : null,
 		];
 
 		if ( isset( $result['download_url'] ) ) {
@@ -202,10 +203,10 @@ final class DCMM_Bulk {
 	 *
 	 * @param int[] $all_ids All subscriber IDs to export.
 	 * @param int   $offset  Current offset.
-	 * @param int   $chunk   Chunk size.
+	 * @param int   $limit   Chunk size.
 	 * @return array{ok: bool, download_url?: string}
 	 */
-	private function export_csv( array $all_ids, int $offset, int $chunk ): array {
+	private function export_csv( array $all_ids, int $offset, int $limit ): array {
 		// Only generate on first chunk; subsequent chunks are no-ops reporting progress.
 		if ( $offset > 0 ) {
 			return [ 'ok' => true ];

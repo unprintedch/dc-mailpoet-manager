@@ -1,0 +1,346 @@
+/**
+ * DC MailPoet Manager – admin styles.
+ *
+ * WP-native-ish, no build step.
+ */
+
+/* ------------------------------------------------------------------ */
+/*  General                                                            */
+/* ------------------------------------------------------------------ */
+#dcmm-wrap {
+	max-width: 100%;
+}
+
+#dcmm-wrap h1 {
+	margin-bottom: 12px;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Filters bar                                                        */
+/* ------------------------------------------------------------------ */
+.dcmm-filters {
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	padding: 10px 12px;
+	margin-bottom: 12px;
+}
+
+.dcmm-filter-row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	align-items: center;
+}
+
+.dcmm-input,
+.dcmm-select {
+	height: 32px;
+	padding: 0 8px;
+	border: 1px solid #8c8f94;
+	border-radius: 4px;
+	font-size: 13px;
+	background: #fff;
+}
+
+.dcmm-input {
+	width: 180px;
+}
+
+.dcmm-input--short {
+	width: 90px;
+}
+
+.dcmm-select {
+	min-width: 100px;
+	cursor: pointer;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Dropdown (tags / lists multi-select)                               */
+/* ------------------------------------------------------------------ */
+.dcmm-dropdown {
+	position: relative;
+	display: inline-block;
+}
+
+.dcmm-dropdown-toggle {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	cursor: pointer;
+}
+
+.dcmm-badge {
+	display: inline-block;
+	min-width: 14px;
+	height: 16px;
+	line-height: 16px;
+	text-align: center;
+	font-size: 11px;
+	font-weight: 600;
+	background: #2271b1;
+	color: #fff;
+	border-radius: 8px;
+	padding: 0 4px;
+}
+
+.dcmm-badge:empty {
+	display: none;
+}
+
+.dcmm-dropdown-panel {
+	display: none;
+	position: absolute;
+	top: 100%;
+	left: 0;
+	z-index: 100;
+	min-width: 220px;
+	max-height: 280px;
+	overflow-y: auto;
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, .12);
+	padding: 6px 0;
+	margin-top: 2px;
+}
+
+.dcmm-dropdown-panel.dcmm-open {
+	display: block;
+}
+
+.dcmm-dropdown-mode {
+	display: flex;
+	gap: 10px;
+	padding: 4px 10px 6px;
+	border-bottom: 1px solid #e0e0e0;
+	margin-bottom: 4px;
+	font-size: 12px;
+}
+
+.dcmm-dropdown-mode label {
+	display: flex;
+	align-items: center;
+	gap: 3px;
+	cursor: pointer;
+}
+
+.dcmm-dropdown-item {
+	display: block;
+	padding: 3px 10px;
+	font-size: 13px;
+	cursor: pointer;
+	white-space: nowrap;
+}
+
+.dcmm-dropdown-item:hover {
+	background: #f0f0f1;
+}
+
+.dcmm-dropdown-item input {
+	margin-right: 4px;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Table                                                              */
+/* ------------------------------------------------------------------ */
+.dcmm-table {
+	margin-top: 0;
+}
+
+.dcmm-col-cb {
+	width: 36px;
+	text-align: center;
+	padding: 6px 4px;
+}
+
+.dcmm-table thead th {
+	font-weight: 600;
+	font-size: 13px;
+	white-space: nowrap;
+}
+
+.dcmm-table tbody td {
+	font-size: 13px;
+	vertical-align: middle;
+	padding: 6px 8px;
+}
+
+tr.dcmm-selected {
+	background: #e8f0fe !important;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Sortable headers                                                   */
+/* ------------------------------------------------------------------ */
+.dcmm-sortable {
+	cursor: pointer;
+	-webkit-user-select: none;
+	user-select: none;
+	position: relative;
+	padding-right: 20px !important;
+}
+
+.dcmm-sortable::after {
+	content: '\25B4\25BE';
+	position: absolute;
+	right: 6px;
+	top: 50%;
+	transform: translateY(-50%);
+	font-size: 10px;
+	letter-spacing: -2px;
+	opacity: .35;
+}
+
+.dcmm-sortable.dcmm-sort-asc::after {
+	content: '\25B2';
+	opacity: .8;
+	letter-spacing: 0;
+}
+
+.dcmm-sortable.dcmm-sort-desc::after {
+	content: '\25BC';
+	opacity: .8;
+	letter-spacing: 0;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Status badges                                                      */
+/* ------------------------------------------------------------------ */
+.dcmm-status {
+	display: inline-block;
+	padding: 2px 8px;
+	border-radius: 10px;
+	font-size: 12px;
+	font-weight: 500;
+	text-transform: capitalize;
+	white-space: nowrap;
+}
+
+.dcmm-status--subscribed {
+	background: #d4edda;
+	color: #155724;
+}
+
+.dcmm-status--unconfirmed {
+	background: #fff3cd;
+	color: #856404;
+}
+
+.dcmm-status--unsubscribed {
+	background: #f8d7da;
+	color: #721c24;
+}
+
+.dcmm-status--inactive {
+	background: #e2e3e5;
+	color: #383d41;
+}
+
+.dcmm-status--bounced {
+	background: #f5c6cb;
+	color: #721c24;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Tag / list pills                                                   */
+/* ------------------------------------------------------------------ */
+.dcmm-pill {
+	display: inline-block;
+	padding: 1px 7px;
+	border-radius: 10px;
+	font-size: 11px;
+	margin: 1px 2px;
+	white-space: nowrap;
+}
+
+.dcmm-pill--tag {
+	background: #e8eaf6;
+	color: #283593;
+}
+
+.dcmm-pill--list {
+	background: #e0f2f1;
+	color: #00695c;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Bulk bar                                                           */
+/* ------------------------------------------------------------------ */
+.dcmm-bulk {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex-wrap: wrap;
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	padding: 8px 12px;
+	margin-bottom: 12px;
+	font-size: 13px;
+}
+
+.dcmm-bulk-progress {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.dcmm-progress-bar {
+	display: inline-block;
+	width: 120px;
+	height: 14px;
+	background: #e0e0e0;
+	border-radius: 7px;
+	overflow: hidden;
+}
+
+.dcmm-progress-fill {
+	display: block;
+	height: 100%;
+	width: 0;
+	background: #2271b1;
+	border-radius: 7px;
+	transition: width .2s ease;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Pagination                                                         */
+/* ------------------------------------------------------------------ */
+.dcmm-pagination {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 10px 0;
+	font-size: 13px;
+}
+
+.dcmm-page-buttons {
+	display: inline-flex;
+	gap: 4px;
+}
+
+.dcmm-page-buttons .button {
+	min-width: 32px;
+	text-align: center;
+	padding: 0 6px;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Loading skeleton                                                   */
+/* ------------------------------------------------------------------ */
+.dcmm-skeleton {
+	display: block;
+	height: 14px;
+	width: 80%;
+	background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%);
+	background-size: 200% 100%;
+	border-radius: 3px;
+	animation: dcmm-shimmer 1.2s ease-in-out infinite;
+}
+
+@keyframes dcmm-shimmer {
+	0%   { background-position: 200% 0; }
+	100% { background-position: -200% 0; }
+}

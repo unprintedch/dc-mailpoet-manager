@@ -4,7 +4,7 @@ Tags: mailpoet, subscribers, admin, bulk actions, export
 Requires at least: 6.6
 Tested up to: 6.8
 Requires PHP: 8.2
-Stable tag: 1.0.0
+Stable tag: 2.0.0
 License: GPLv2 or later
 Text Domain: dc-mailpoet-manager
 
@@ -24,52 +24,26 @@ DC MailPoet Manager adds a powerful subscriber management screen under **Tools �
 * **Chunked processing** with progress bar for bulk operations on large selections
 * **CSV export** of selected subscribers with all data
 
+No React. No build step. No npm. Pure PHP + vanilla JavaScript.
+
 == Installation ==
 
-1. Copy the `dc-mailpoet-manager` folder to `wp-content/plugins/`
-2. Install JS dependencies and build:
-
-    cd wp-content/plugins/dc-mailpoet-manager
-    npm install
-    npm run build
-
-3. Activate the plugin in WordPress admin → Plugins
-4. Go to **Tools → MailPoet Manager**
-
-== How to Use ==
-
-1. Navigate to **Tools → MailPoet Manager** in your WordPress admin.
-2. Use the **filters bar** at the top to narrow down subscribers:
-   - Type in the search box to find by email or name
-   - Select a status from the dropdown
-   - Add tags or lists using the token fields; choose ANY or ALL matching
-   - Enter an exact NPA or a min/max range
-3. Click column headers to **sort** the table.
-4. **Select subscribers** using the checkboxes.
-5. Choose a **bulk action** from the dropdown and click **Apply**:
-   - For tag/list actions, select which tags or lists to add/remove
-   - Progress is shown in real-time for large selections
-   - CSV export opens the file in a new tab when complete
-6. Use the **pagination controls** at the bottom to navigate pages and change page size.
-
-== REST API ==
-
-The plugin exposes three endpoints under `dc-mailpoet/v1`:
-
-* `GET /meta` — Returns available tags, lists, custom fields, and auto-detected NPA field ID.
-* `GET /subscribers` — Paginated, filtered, sorted subscriber list.
-* `POST /bulk` — Execute bulk actions (add_tag, remove_tag, add_list, remove_list, unsubscribe, export_csv).
-
-All endpoints require `manage_options` capability and WP REST nonce authentication.
+1. Upload the `dc-mailpoet-manager` folder to `wp-content/plugins/`
+2. Activate the plugin in WordPress admin → Plugins
+3. Go to **Tools → MailPoet Manager**
 
 == Requirements ==
 
 * WordPress 6.6+
 * PHP 8.2+
 * MailPoet plugin installed and activated (tables must exist)
-* Node.js 18+ (for building assets)
 
 == Changelog ==
+
+= 2.0.0 =
+* Complete rewrite: removed React/build toolchain, replaced with vanilla JS.
+* No npm, no node_modules, no build step required.
+* Single JS file + single CSS file.
 
 = 1.0.0 =
 * Initial release: subscriber table, filters, bulk actions, CSV export.
