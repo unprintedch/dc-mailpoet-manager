@@ -1,0 +1,55 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+build/
+*.map
+
+# OS Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Editor directories and files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# WordPress specific (if needed)
+wp-config.php
+.htaccess
+
+# Optional: Uncomment if you want to ignore build files but keep source
+# build/style.css
+# build/editor.css
+# build/app.js
+
