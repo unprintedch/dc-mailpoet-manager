@@ -110,6 +110,13 @@ final class DC_MailPoet_Manager {
 						</div>
 					</div>
 
+					<div class="dcmm-dropdown" id="dcmm-columns-dropdown">
+						<button type="button" class="dcmm-dropdown-toggle dcmm-select"><?php esc_html_e( 'Columns', 'dc-mailpoet-manager' ); ?> <span class="dcmm-badge" id="dcmm-columns-count"></span></button>
+						<div class="dcmm-dropdown-panel" id="dcmm-columns-panel">
+							<div class="dcmm-dropdown-list" id="dcmm-columns-list"></div>
+						</div>
+					</div>
+
 					<select id="dcmm-per-page" class="dcmm-select">
 						<option value="25">25</option>
 						<option value="50" selected>50</option>
@@ -147,21 +154,9 @@ final class DC_MailPoet_Manager {
 
 			<!-- Data table -->
 			<table class="widefat striped dcmm-table" id="dcmm-table">
-				<thead>
-					<tr>
-						<th class="dcmm-col-cb"><input type="checkbox" id="dcmm-select-all"></th>
-						<th class="dcmm-sortable" data-sort="email"><?php esc_html_e( 'Email', 'dc-mailpoet-manager' ); ?></th>
-						<th class="dcmm-sortable" data-sort="first_name"><?php esc_html_e( 'First name', 'dc-mailpoet-manager' ); ?></th>
-						<th class="dcmm-sortable" data-sort="last_name"><?php esc_html_e( 'Last name', 'dc-mailpoet-manager' ); ?></th>
-						<th class="dcmm-sortable" data-sort="status"><?php esc_html_e( 'Status', 'dc-mailpoet-manager' ); ?></th>
-						<th class="dcmm-sortable" data-sort="npa"><?php esc_html_e( 'NPA', 'dc-mailpoet-manager' ); ?></th>
-						<th><?php esc_html_e( 'Tags', 'dc-mailpoet-manager' ); ?></th>
-						<th><?php esc_html_e( 'Lists', 'dc-mailpoet-manager' ); ?></th>
-						<th class="dcmm-sortable" data-sort="created_at"><?php esc_html_e( 'Created', 'dc-mailpoet-manager' ); ?></th>
-					</tr>
-				</thead>
+				<thead id="dcmm-thead"></thead>
 				<tbody id="dcmm-tbody">
-					<tr><td colspan="9"><?php esc_html_e( 'Loading…', 'dc-mailpoet-manager' ); ?></td></tr>
+					<tr><td colspan="20"><?php esc_html_e( 'Loading…', 'dc-mailpoet-manager' ); ?></td></tr>
 				</tbody>
 			</table>
 

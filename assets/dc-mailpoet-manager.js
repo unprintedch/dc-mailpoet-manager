@@ -39,6 +39,7 @@
 		selected: new Set(),
 		loading: false,
 		bulkRunning: false,
+		visibleCustomFields: [], // array of custom field IDs to display as columns
 	};
 
 	/* ------------------------------------------------------------------ */
@@ -61,6 +62,27 @@
 			clearTimeout(t);
 			t = setTimeout(fn, ms);
 		};
+	}
+
+	/**
+	 * Return the total number of visible columns (fixed + dynamic).
+	 */
+	function colCount() {
+		// checkbox, email, first_name, last_name, status, tags, lists, created_at
+		// + one column per visible custom field
+		return 8 + state.visibleCustomFields.length;
+	}
+
+	/**
+	 * Lookup custom field name by ID.
+	 */
+	function cfName(fieldId) {
+		for (var i = 0; i < state.meta.custom_fields.length; i++) {
+			if (state.meta.custom_fields[i].id === fieldId) {
+				return state.meta.custom_fields[i].name;
+			}
+		}
+		return 'Field #' + fieldId;
 	}
 
 	/* ------------------------------------------------------------------ */
@@ -112,8 +134,16 @@
 			state.meta.lists = data.lists || [];
 			state.meta.custom_fields = data.custom_fields || [];
 			state.meta.npa_field_id = data.suggested_npa_field_id || null;
+
+			// Auto-select NPA custom field if it exists.
+			if (state.meta.npa_field_id) {
+				state.visibleCustomFields = [state.meta.npa_field_id];
+			}
+
 			renderDropdownCheckboxes('tags');
 			renderDropdownCheckboxes('lists');
+			renderColumnsDropdown();
+			renderTableHead();
 		});
 	}
 
@@ -136,6 +166,7 @@
 			tags_mode: state.filters.tags_mode,
 			lists: state.filters.lists,
 			lists_mode: state.filters.lists_mode,
+			custom_field_ids: state.visibleCustomFields,
 			sort: state.sort,
 			order: state.order,
 		};
@@ -153,7 +184,7 @@
 			updateBulkBar();
 		}).catch(function (err) {
 			state.loading = false;
-			dom.tbody.innerHTML = '<tr><td colspan="9">Error: ' + esc(err.message) + '</td></tr>';
+			dom.tbody.innerHTML = '<tr><td colspan="' + colCount() + '">Error: ' + esc(err.message) + '</td></tr>';
 		});
 	}
 
@@ -174,10 +205,62 @@
 	}
 
 	/* ------------------------------------------------------------------ */
+	/*  Render: columns dropdown                                           */
+	/* ------------------------------------------------------------------ */
+	function renderColumnsDropdown() {
+		var container = document.getElementById('dcmm-columns-list');
+		if (!container) return;
+
+		container.innerHTML = state.meta.custom_fields.map(function (cf) {
+			var checked = state.visibleCustomFields.indexOf(cf.id) !== -1 ? ' checked' : '';
+			return '<label class="dcmm-dropdown-item">' +
+				'<input type="checkbox" value="' + cf.id + '" data-type="columns"' + checked + '> ' +
+				esc(cf.name) +
+				'</label>';
+		}).join('');
+
+		updateDropdownCount('columns');
+	}
+
+	/* ------------------------------------------------------------------ */
+	/*  Render: table head (dynamic)                                       */
+	/* ------------------------------------------------------------------ */
+	function renderTableHead() {
+		var html = '<tr>';
+		html += '<th class="dcmm-col-cb"><input type="checkbox" id="dcmm-select-all"></th>';
+		html += '<th class="dcmm-sortable" data-sort="email">Email</th>';
+		html += '<th class="dcmm-sortable" data-sort="first_name">First name</th>';
+		html += '<th class="dcmm-sortable" data-sort="last_name">Last name</th>';
+		html += '<th class="dcmm-sortable" data-sort="status">Status</th>';
+
+		// Dynamic custom field columns.
+		state.visibleCustomFields.forEach(function (cfId) {
+			html += '<th class="dcmm-cf-col">' + esc(cfName(cfId)) + '</th>';
+		});
+
+		html += '<th>Tags</th>';
+		html += '<th>Lists</th>';
+		html += '<th class="dcmm-sortable" data-sort="created_at">Created</th>';
+		html += '</tr>';
+
+		dom.thead.innerHTML = html;
+
+		// Re-cache select-all (it was just recreated).
+		dom.selectAll = document.getElementById('dcmm-select-all');
+		if (dom.selectAll) {
+			dom.selectAll.addEventListener('change', onSelectAllChange);
+		}
+
+		// Re-bind sort headers.
+		bindSortHeaders();
+		updateSortHeaders();
+	}
+
+	/* ------------------------------------------------------------------ */
 	/*  Render: loading state                                              */
 	/* ------------------------------------------------------------------ */
 	function showLoading() {
-		var cols = 9;
+		var cols = colCount();
 		var rows = '';
 		for (var i = 0; i < 5; i++) {
 			rows += '<tr>';
@@ -194,7 +277,7 @@
 	/* ------------------------------------------------------------------ */
 	function renderTable() {
 		if (!state.items.length) {
-			dom.tbody.innerHTML = '<tr><td colspan="9">No subscribers found.</td></tr>';
+			dom.tbody.innerHTML = '<tr><td colspan="' + colCount() + '">No subscribers found.</td></tr>';
 			return;
 		}
 
@@ -211,17 +294,24 @@
 				return '<span class="dcmm-pill dcmm-pill--list">' + esc(l.name) + '</span>';
 			}).join(' ');
 
-			html += '<tr' + rowClass + '>' +
-				'<td class="dcmm-col-cb"><input type="checkbox" class="dcmm-row-cb" value="' + s.id + '"' + checked + '></td>' +
-				'<td>' + esc(s.email) + '</td>' +
-				'<td>' + esc(s.first_name) + '</td>' +
-				'<td>' + esc(s.last_name) + '</td>' +
-				'<td><span class="dcmm-status dcmm-status--' + esc(s.status) + '">' + esc(s.status) + '</span></td>' +
-				'<td>' + (s.npa !== null ? esc(String(s.npa)) : '—') + '</td>' +
-				'<td>' + (tagsPills || '—') + '</td>' +
-				'<td>' + (listsPills || '—') + '</td>' +
-				'<td>' + esc(s.created_at ? s.created_at.substring(0, 10) : '') + '</td>' +
-				'</tr>';
+			html += '<tr' + rowClass + '>';
+			html += '<td class="dcmm-col-cb"><input type="checkbox" class="dcmm-row-cb" value="' + s.id + '"' + checked + '></td>';
+			html += '<td>' + esc(s.email) + '</td>';
+			html += '<td>' + esc(s.first_name) + '</td>';
+			html += '<td>' + esc(s.last_name) + '</td>';
+			html += '<td><span class="dcmm-status dcmm-status--' + esc(s.status) + '">' + esc(s.status) + '</span></td>';
+
+			// Dynamic custom field cells.
+			var cf = s.custom_fields || {};
+			state.visibleCustomFields.forEach(function (cfId) {
+				var val = cf[cfId];
+				html += '<td>' + (val !== null && val !== undefined ? esc(String(val)) : '—') + '</td>';
+			});
+
+			html += '<td>' + (tagsPills || '—') + '</td>';
+			html += '<td>' + (listsPills || '—') + '</td>';
+			html += '<td>' + esc(s.created_at ? s.created_at.substring(0, 10) : '') + '</td>';
+			html += '</tr>';
 		});
 
 		dom.tbody.innerHTML = html;
@@ -229,7 +319,7 @@
 		// Update header checkbox state.
 		var pageIds = state.items.map(function (s) { return s.id; });
 		var allChecked = pageIds.length > 0 && pageIds.every(function (id) { return state.selected.has(id); });
-		dom.selectAll.checked = allChecked;
+		if (dom.selectAll) dom.selectAll.checked = allChecked;
 	}
 
 	/* ------------------------------------------------------------------ */
@@ -349,7 +439,6 @@
 					throw new Error(res.message || 'Bulk action failed');
 				}
 
-				// Show final progress.
 				var donePct = total > 0 ? Math.round((res.processed / total) * 100) : 100;
 				dom.progressFill.style.width = donePct + '%';
 				dom.progressText.textContent = res.processed + ' / ' + total;
@@ -363,7 +452,6 @@
 					return chunk(res.next_offset);
 				}
 
-				// Done.
 				state.bulkRunning = false;
 				dom.bulkApply.disabled = false;
 				dom.progressText.textContent = 'Done — ' + total + ' processed';
@@ -387,6 +475,41 @@
 	}
 
 	var debouncedFilterChange = debounce(onFilterChange, 300);
+
+	/* ------------------------------------------------------------------ */
+	/*  Event: select-all checkbox                                         */
+	/* ------------------------------------------------------------------ */
+	function onSelectAllChange() {
+		var checked = this.checked;
+		state.items.forEach(function (s) {
+			if (checked) {
+				state.selected.add(s.id);
+			} else {
+				state.selected.delete(s.id);
+			}
+		});
+		renderTable();
+		updateBulkBar();
+	}
+
+	/* ------------------------------------------------------------------ */
+	/*  Event: bind sort header clicks                                     */
+	/* ------------------------------------------------------------------ */
+	function bindSortHeaders() {
+		document.querySelectorAll('.dcmm-sortable').forEach(function (th) {
+			th.addEventListener('click', function () {
+				var col = this.dataset.sort;
+				if (state.sort === col) {
+					state.order = state.order === 'asc' ? 'desc' : 'asc';
+				} else {
+					state.sort = col;
+					state.order = 'asc';
+				}
+				updateSortHeaders();
+				fetchSubscribers();
+			});
+		});
+	}
 
 	/* ------------------------------------------------------------------ */
 	/*  Event: bind all listeners                                          */
@@ -439,6 +562,15 @@
 			onFilterChange();
 		});
 
+		// Columns dropdown checkboxes (delegated).
+		document.getElementById('dcmm-columns-list').addEventListener('change', function (e) {
+			if (e.target.type !== 'checkbox') return;
+			state.visibleCustomFields = getCheckedValues('dcmm-columns-list');
+			updateDropdownCount('columns');
+			renderTableHead();
+			fetchSubscribers();
+		});
+
 		// Tags/lists mode radio.
 		document.querySelectorAll('input[name="dcmm-tags-mode"]').forEach(function (r) {
 			r.addEventListener('change', function () {
@@ -469,35 +601,6 @@
 			if (!e.target.closest('.dcmm-dropdown')) {
 				closeAllDropdowns();
 			}
-		});
-
-		// Sort headers.
-		document.querySelectorAll('.dcmm-sortable').forEach(function (th) {
-			th.addEventListener('click', function () {
-				var col = this.dataset.sort;
-				if (state.sort === col) {
-					state.order = state.order === 'asc' ? 'desc' : 'asc';
-				} else {
-					state.sort = col;
-					state.order = 'asc';
-				}
-				updateSortHeaders();
-				fetchSubscribers();
-			});
-		});
-
-		// Select all checkbox.
-		dom.selectAll.addEventListener('change', function () {
-			var checked = this.checked;
-			state.items.forEach(function (s) {
-				if (checked) {
-					state.selected.add(s.id);
-				} else {
-					state.selected.delete(s.id);
-				}
-			});
-			renderTable();
-			updateBulkBar();
 		});
 
 		// Row checkboxes (delegated).
@@ -551,9 +654,14 @@
 	}
 
 	function updateDropdownCount(type) {
-		var arr = type === 'tags' ? state.filters.tags : state.filters.lists;
+		var arr;
+		if (type === 'tags') arr = state.filters.tags;
+		else if (type === 'lists') arr = state.filters.lists;
+		else if (type === 'columns') arr = state.visibleCustomFields;
+		else return;
+
 		var badge = document.getElementById('dcmm-' + type + '-count');
-		badge.textContent = arr.length ? arr.length : '';
+		if (badge) badge.textContent = arr.length ? arr.length : '';
 	}
 
 	/* ------------------------------------------------------------------ */
@@ -566,6 +674,7 @@
 		dom.npaMin = document.getElementById('dcmm-npa-min');
 		dom.npaMax = document.getElementById('dcmm-npa-max');
 		dom.perPage = document.getElementById('dcmm-per-page');
+		dom.thead = document.getElementById('dcmm-thead');
 		dom.tbody = document.getElementById('dcmm-tbody');
 		dom.selectAll = document.getElementById('dcmm-select-all');
 		dom.pagination = document.getElementById('dcmm-pagination');
@@ -583,12 +692,11 @@
 		if (!dom.tbody) return;
 
 		bindEvents();
-		updateSortHeaders();
 
 		fetchMeta().then(function () {
 			fetchSubscribers();
 		}).catch(function (err) {
-			dom.tbody.innerHTML = '<tr><td colspan="9">Failed to load metadata: ' + esc(err.message) + '</td></tr>';
+			dom.tbody.innerHTML = '<tr><td colspan="' + colCount() + '">Failed to load metadata: ' + esc(err.message) + '</td></tr>';
 		});
 	});
 })();

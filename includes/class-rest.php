@@ -66,20 +66,21 @@ final class DCMM_REST {
 			: null;
 
 		$params = [
-			'page'         => absint( $request->get_param( 'page' ) ?: 1 ),
-			'per_page'     => min( absint( $request->get_param( 'per_page' ) ?: 50 ), 200 ),
-			'search'       => sanitize_text_field( $request->get_param( 'search' ) ?? '' ),
-			'status'       => sanitize_text_field( $request->get_param( 'status' ) ?? '' ),
-			'tags'         => dcmm_sanitize_int_array( $request->get_param( 'tags' ) ?? [] ),
-			'tags_mode'    => ( $request->get_param( 'tags_mode' ) === 'all' ) ? 'all' : 'any',
-			'lists'        => dcmm_sanitize_int_array( $request->get_param( 'lists' ) ?? [] ),
-			'lists_mode'   => ( $request->get_param( 'lists_mode' ) === 'all' ) ? 'all' : 'any',
-			'npa_field_id' => $npa_field_id,
-			'npa'          => sanitize_text_field( $request->get_param( 'npa' ) ?? '' ),
-			'npa_min'      => sanitize_text_field( $request->get_param( 'npa_min' ) ?? '' ),
-			'npa_max'      => sanitize_text_field( $request->get_param( 'npa_max' ) ?? '' ),
-			'sort'         => dcmm_validate_sort( sanitize_text_field( $request->get_param( 'sort' ) ?? 'created_at' ) ),
-			'order'        => dcmm_validate_order( sanitize_text_field( $request->get_param( 'order' ) ?? 'desc' ) ),
+			'page'             => absint( $request->get_param( 'page' ) ?: 1 ),
+			'per_page'         => min( absint( $request->get_param( 'per_page' ) ?: 50 ), 200 ),
+			'search'           => sanitize_text_field( $request->get_param( 'search' ) ?? '' ),
+			'status'           => sanitize_text_field( $request->get_param( 'status' ) ?? '' ),
+			'tags'             => dcmm_sanitize_int_array( $request->get_param( 'tags' ) ?? [] ),
+			'tags_mode'        => ( $request->get_param( 'tags_mode' ) === 'all' ) ? 'all' : 'any',
+			'lists'            => dcmm_sanitize_int_array( $request->get_param( 'lists' ) ?? [] ),
+			'lists_mode'       => ( $request->get_param( 'lists_mode' ) === 'all' ) ? 'all' : 'any',
+			'npa_field_id'     => $npa_field_id,
+			'npa'              => sanitize_text_field( $request->get_param( 'npa' ) ?? '' ),
+			'npa_min'          => sanitize_text_field( $request->get_param( 'npa_min' ) ?? '' ),
+			'npa_max'          => sanitize_text_field( $request->get_param( 'npa_max' ) ?? '' ),
+			'custom_field_ids' => dcmm_sanitize_int_array( $request->get_param( 'custom_field_ids' ) ?? [] ),
+			'sort'             => dcmm_validate_sort( sanitize_text_field( $request->get_param( 'sort' ) ?? 'created_at' ) ),
+			'order'            => dcmm_validate_order( sanitize_text_field( $request->get_param( 'order' ) ?? 'desc' ) ),
 		];
 
 		$result = $queries->get_subscribers( $params );
@@ -142,12 +143,13 @@ final class DCMM_REST {
 			'tags_mode'    => [ 'type' => 'string', 'default' => 'any', 'enum' => [ 'any', 'all' ] ],
 			'lists'        => [ 'type' => 'array', 'items' => [ 'type' => 'integer' ], 'default' => [] ],
 			'lists_mode'   => [ 'type' => 'string', 'default' => 'any', 'enum' => [ 'any', 'all' ] ],
-			'npa_field_id' => [ 'type' => 'integer', 'default' => null ],
-			'npa'          => [ 'type' => 'string', 'default' => '' ],
-			'npa_min'      => [ 'type' => 'string', 'default' => '' ],
-			'npa_max'      => [ 'type' => 'string', 'default' => '' ],
-			'sort'         => [ 'type' => 'string', 'default' => 'created_at' ],
-			'order'        => [ 'type' => 'string', 'default' => 'desc', 'enum' => [ 'asc', 'desc' ] ],
+			'npa_field_id'     => [ 'type' => 'integer', 'default' => null ],
+			'npa'              => [ 'type' => 'string', 'default' => '' ],
+			'npa_min'          => [ 'type' => 'string', 'default' => '' ],
+			'npa_max'          => [ 'type' => 'string', 'default' => '' ],
+			'custom_field_ids' => [ 'type' => 'array', 'items' => [ 'type' => 'integer' ], 'default' => [] ],
+			'sort'             => [ 'type' => 'string', 'default' => 'created_at' ],
+			'order'            => [ 'type' => 'string', 'default' => 'desc', 'enum' => [ 'asc', 'desc' ] ],
 		];
 	}
 }

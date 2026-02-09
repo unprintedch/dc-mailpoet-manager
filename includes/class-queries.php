@@ -88,10 +88,11 @@ final class DCMM_Queries {
 	/**
 	 * Get paginated subscribers with filters.
 	 *
-	 * Uses a 3-query strategy:
-	 * 1) Main query for subscriber rows + NPA + count
+	 * Uses a multi-query strategy:
+	 * 1) Main query for subscriber rows + NPA (for filtering) + count
 	 * 2) Tags for the page's subscriber IDs
 	 * 3) Lists for the page's subscriber IDs
+	 * 4) Custom field values for the page's subscriber IDs
 	 *
 	 * @param array $params Validated filter params.
 	 * @return array{items: array, total: int}
@@ -292,21 +293,53 @@ final class DCMM_Queries {
 			];
 		}
 
+		// Query 4: custom field values for these subscribers.
+		$custom_field_ids = $params['custom_field_ids'] ?? [];
+		$cf_map           = []; // subscriber_id => { field_id => value }
+
+		if ( ! empty( $custom_field_ids ) ) {
+			$cf_sid_placeholders = implode( ',', $subscriber_ids ); // already ints
+			$cf_fid_placeholders = implode( ',', array_fill( 0, count( $custom_field_ids ), '%d' ) );
+
+			$cf_sql = "SELECT subscriber_id, custom_field_id, value
+					   FROM {$t_scf}
+					   WHERE subscriber_id IN ({$cf_sid_placeholders})
+					   AND custom_field_id IN ({$cf_fid_placeholders})";
+
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared
+			$cf_rows = $wpdb->get_results(
+				$wpdb->prepare( $cf_sql, $custom_field_ids ),
+				ARRAY_A
+			);
+
+			foreach ( ( $cf_rows ?: [] ) as $cfr ) {
+				$cf_map[ (int) $cfr['subscriber_id'] ][ (int) $cfr['custom_field_id'] ] = $cfr['value'];
+			}
+		}
+
 		// Assemble items.
 		$items = [];
 		foreach ( $rows as $row ) {
 			$sid     = (int) $row['id'];
-			$items[] = [
-				'id'         => $sid,
-				'email'      => $row['email'],
-				'first_name' => $row['first_name'],
-				'last_name'  => $row['last_name'],
-				'status'     => $row['status'],
-				'created_at' => $row['created_at'],
-				'npa'        => $row['npa'],
-				'tags'       => $tags_map[ $sid ] ?? [],
-				'lists'      => $lists_map[ $sid ] ?? [],
+			$item    = [
+				'id'            => $sid,
+				'email'         => $row['email'],
+				'first_name'    => $row['first_name'],
+				'last_name'     => $row['last_name'],
+				'status'        => $row['status'],
+				'created_at'    => $row['created_at'],
+				'npa'           => $row['npa'],
+				'tags'          => $tags_map[ $sid ] ?? [],
+				'lists'         => $lists_map[ $sid ] ?? [],
+				'custom_fields' => [],
 			];
+
+			// Build custom_fields as { field_id: value } for requested fields.
+			foreach ( $custom_field_ids as $cf_id ) {
+				$item['custom_fields'][ $cf_id ] = $cf_map[ $sid ][ $cf_id ] ?? null;
+			}
+
+			$items[] = $item;
 		}
 
 		return [ 'items' => $items, 'total' => $total ];
